@@ -1,0 +1,115 @@
+CREATE TABLE  TB_userinfo
+(userinfo_no int identity(1,1) PRIMARY KEY,
+userinfo_IDcard VARCHAR(18) unique check(len(userinfo_IDcard) = 15 or len(userinfo_IDcard)= 18) NOT NULL,
+userinfo_name VARCHAR(20) NOT NULL,
+userinfo_age VARCHAR(4) NOT NULL,
+userinfo_address VARCHAR(20) NOT NULL,
+userinfo_phone VARCHAR(11) unique check(len(userinfo_phone) = 11) NOT NULL,
+
+);
+
+
+
+-----------------存储过程
+--开户
+CREATE PROC P_userinfo_open
+@userinfo_IDcard VARCHAR(18),
+@userinfo_name VARCHAR(20),
+@userinfo_age VARCHAR(4),
+@userinfo_address VARCHAR(20),
+@userinfo_phone VARCHAR(11)
+AS
+
+if exists(
+          select *
+          from TB_userinfo
+          where @userinfo_IDcard = userinfo_IDcard
+)
+begin
+PRINT'该身份证已被注册'
+end
+
+ELSE
+INSERT INTO TB_userinfo(userinfo_IDcard,userinfo_name,userinfo_age,userinfo_address,userinfo_phone)
+VALUES (@userinfo_IDcard,@userinfo_name,@userinfo_age,@userinfo_address,@userinfo_phone)
+PRINT'开户成功,您的客户号为:'
+SELECT userinfo_no from TB_userinfo where @userinfo_IDcard = userinfo_IDcard;
+
+--测试
+EXEC P_userinfo_open'430223199712341234','张三','20','湖南长沙','15676543245'
+EXEC P_userinfo_open'430223199755555555','李四','18','湖南株洲','15612341234'
+EXEC P_userinfo_open'430223199766666666','王五','36','广东广州','15678977897'
+
+
+CREATE PROC P_userinfo_delete
+@userinfo_no int ,
+@userinfo_IDcard VARCHAR(18) ,
+@userinfo_name VARCHAR(20) ,
+@userinfo_age VARCHAR(4),
+@userinfo_address VARCHAR(20) ,
+@userinfo_phone VARCHAR(11) 
+
+AS
+
+
+if not exists(
+          select *
+          from TB_userinfo
+          where @userinfo_no = userinfo_no
+)
+
+PRINT'该用户不存在'
+
+else if not exists(
+          select *
+          from TB_userinfo
+          where @userinfo_IDcard = userinfo_IDcard
+)
+
+PRINT'身份证输入错误'
+
+else if not exists(
+          select *
+          from TB_userinfo
+          where @userinfo_name = userinfo_name
+)
+PRINT'姓名输入错误'
+
+else if not exists(
+          select *
+          from TB_userinfo
+          where @userinfo_age = userinfo_age
+)
+PRINT'年龄输入错误'
+
+else if not exists(
+          select *
+          from TB_userinfo
+          where @userinfo_address = userinfo_address
+)
+PRINT'地址输入错误'
+
+else if not exists(
+          select *
+          from TB_userinfo
+          where @userinfo_phone = userinfo_phone
+)
+PRINT'电话号码输入错误'
+
+
+else
+begin
+delete from TB_userinfo
+where @userinfo_no = userinfo_no
+print'操作成功'
+end;
+--测试
+EXEC P_userinfo_delete'1','430223199712341234','张三','20','湖南长沙','15676543245'
+
+--查询
+--CREATE PROC P_userinfo_select
+
+
+
+--修改
+--CREATE PROC P_userinfo_alter
