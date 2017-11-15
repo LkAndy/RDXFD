@@ -8,6 +8,45 @@ userinfo_phone VARCHAR(11) unique check(len(userinfo_phone) = 11) NOT NULL,
 
 );
 
+CREATE TABLE  TB_employeeinfo
+(employeeinfo_no int identity(1,1) PRIMARY KEY,
+employeeinfo_IDcard VARCHAR(18) unique check(len(employeeinfo_IDcard) = 15 or len(employeeinfo_IDcard)= 18) NOT NULL,
+employeeinfo_name VARCHAR(20) NOT NULL,
+employeeinfo_age VARCHAR(4) NOT NULL,
+employeeinfo_address VARCHAR(20) NOT NULL,
+employeeinfo_phone VARCHAR(11) unique check(len(employeeinfo_phone) = 11) NOT NULL,
+
+);
+
+CREATE TABLE  TB_order
+(order_no int identity(1,1) PRIMARY KEY,
+
+order_fabu_Time VARCHAR(20) NOT NULL,
+order_jiedan_Time VARCHAR(20) NOT NULL,
+order_songdan_Time VARCHAR(20) NOT NULL,
+order_money money NOT NULL,
+
+userinfo_no int  NOT NULL,
+employeeinfo_no int  NOT NULL,
+
+FOREIGN KEY (userinfo_no) REFERENCES TB_userinfo (userinfo_no),
+
+FOREIGN KEY (employeeinfo_no) REFERENCES TB_employeeinfo (employeeinfo_no)
+
+
+);
+
+-----------------原始数据
+
+Insert
+Into TB_userinfo(userinfo_IDcard,userinfo_name,userinfo_age,userinfo_address,userinfo_phone) 
+Values (430123199701231234,'张三',20,'湖南长沙',15612342234);
+
+Insert
+Into TB_employeeinfo(employeeinfo_IDcard,employeeinfo_name,employeeinfo_age,employeeinfo_address,
+employeeinfo_phone) 
+Values (110123198901231234,'雇员1',28,'湖南长沙',13212345678);
+
 
 
 -----------------存储过程
@@ -113,3 +152,45 @@ EXEC P_userinfo_delete'1','430223199712341234','张三','20','湖南长沙','156
 
 --修改
 --CREATE PROC P_userinfo_alter
+
+--增加订单
+CREATE PROCEDURE P_order_insert
+
+@order_fabu_Time VARCHAR(20),
+@order_jiedan_Time VARCHAR(20),
+@order_songdan_Time VARCHAR(20),
+@order_money money ,
+@userinfo_no VARCHAR(4),
+@employeeinfo_no VARCHAR(4)
+
+AS
+
+
+IF NOT EXISTS
+(
+        SELECT *
+     from TB_userinfo
+     where userinfo_no = @userinfo_no  
+)
+PRINT'无该客户,请输入已有的客户号'
+
+ELSE IF NOT EXISTS
+(
+        SELECT *
+     from TB_employeeinfo
+     where employeeinfo_no = @employeeinfo_no  
+)
+PRINT'无该雇员,请输入已有的雇员号'
+
+
+
+
+ELSE
+BEGIN
+INSERT INTO TB_order
+VALUES (@order_fabu_Time,@order_jiedan_Time,@order_songdan_Time,@order_money,
+@userinfo_no,@employeeinfo_no)
+PRINT'订购成功'
+END;
+--测试
+EXEC P_order_insert'11:00:00','11:10:00','12:00:00','20','1','1';--正确
